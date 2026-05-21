@@ -1,0 +1,114 @@
+# Feedback Analyzer 11 — Cursor 규칙
+
+## 프로젝트 맥락
+
+- **리팩토링 챌린지** 교육용 코드베이스이며, 의도적 코드 스멜이 포함되어 있음. 전면 재작성 금지.
+- **C++17**, **CMake 3.14+**, **cpp-httplib** (`src/cpp/httplib.h`), 타깃 `feedback_analyzer`.
+- 실행: `build\feedback_analyzer.exe` → **http://localhost:8080**.
+- 문서: `project_purpose.md`, `docs/analyzer.md`, `README.md`.
+- 변경은 **미션 1개** 또는 **스멜 1개** 단위로 진행. 목록에 있는 버그 수정이 아니면 기존 동작 유지.
+
+## 아키텍처 맵
+
+```
+Browser → main.cpp (라우트, renderPage, 파싱, fil_data)
+       → Session::currentFeedbacks
+       → TextAnalyzer::sent/kw → Constants
+       → Filters::fil → Constants + Filters::S_KEYWORDS
+       → UIComponents, Logger (콘솔), FileHandler (미사용)
+```
+
+| 모듈 | 역할 |
+|------|------|
+| `main.cpp` | God Object: `/`, `/analyze`, `/upload`, `/filter`, `/download` + HTML |
+| `Session` | 정적 피드백 목록 |
+| `TextAnalyzer` | `sent()`, `kw()`; `globalSent`/`globalKw` |
+| `Filters` | `fil()`; 자체 `S_KEYWORDS` |
+| `Constants` | 감정·카테고리 키워드 |
+| `Feedback` | `text` 필드만 |
+
+## 해야 할 것 (Do)
+
+- 구조 변경 전 `docs/analyzer.md`를 읽을 것.
+- 한국어 UI는 **UTF-8 `u8"..."`** 리터럴 유지.
+- `.cpp` 또는 테스트 추가 시 `CMakeLists.txt` 갱신.
+- 필터/통계 변경 전 감정 분류 로직을 **한 곳**으로 통합.
+- 새 프레임워크보다 함수/클래스 추출(Extract Function/Class) 우선.
+- 대규모 리팩토링 전 GoogleTest/Catch2로 analyzer/filter/parse 단위 테스트 추가.
+
+## 하지 말 것 (Don't)
+
+- `httplib.h` 수정 및 `build/` 커밋 금지.
+- 해당 미션이 아니면 모든 스멜을 한 번에 수정하지 말 것.
+- 요청 없이 미션 7(Trend, File DB) 구현 금지.
+- 사용자 선택 없이 `FileHandler` 제거/연동 금지.
+- React 등 프론트 재작성 금지. 서버 사이드 HTML만.
+
+## 알려진 버그 (미션 3 또는 명시적 요청 시만 수정)
+
+1. **중립 불일치**: `sent()`는 `Constants`(중립 키워드 없음); `fil()`은 `Filters::S_KEYWORDS`의 중립 사용 — 통계 ≠ 필터.
+2. **키워드 필터가 `main` 스킵**: `Filters::fil`은 `main` 건너뜀; `kw()`는 `main`만 사용.
+3. **Logger 미연동**: 콘솔만 출력. 미션 3은 level별 페이지 표시 필요.
+4. `/upload`는 분석 생략; `fil_data` 잔존 가능; CSV 다운로드 이스케이프 없음.
+
+## 미션 8단계 (~13.5시간)
+
+| # | 내용 |
+|---|------|
+| 1 | 개요·안내 (1h) |
+| 2 | 테스트, 커버리지 ≥ 90% (2h) |
+| 3 | 페이지 로그, 멀티라인, 중립 필터 (1.5h) |
+| 4 | 네이밍, 전역, 매직 값 (1h) |
+| 5 | 긴 함수, 중복 코드 (1.5h) |
+| 6 | 추가 리팩토링 1건 (1h) |
+| 7 | Trend + File DB (3h) |
+| 8 | 팀 리뷰·발표 (2h) |
+
+**현재 미션:** `<!-- 설정: 1-8 -->` → **1** — 사용자가 지시하지 않으면 해당 미션 작업만 수행.
+
+## 리팩토링 우선순위
+
+1. P0: 감정 분류 단일화; 키워드 필터 `main` 스킵 수정.
+2. P1: 테스트(M2) + M3 버그/UX.
+3. P2: `containsAny` 공통화; `renderPage`/라우트 축소.
+4. P3: Session/`fil_data` 캡슐화; 키워드 소스 중복 제거.
+5. P4: `handlers/`, `services/`, `models/`; M7 Trend/DB.
+
+## 네이밍 규칙
+
+- 해당 범위에서 리네이밍: `fil`→`filterFeedbacks`, `sent`→`countSentiments`, `kw`→`countKeywords` (M4).
+- `sentimentFilter`, `filteredFeedbacks` 등 의미 있는 이름 사용. 새 축약어 금지.
+
+## 테스트 정책
+
+- GoogleTest 또는 Catch2; 단위 테스트 **≥ 90%** (M2).
+- 우선: 감정(중립 포함), `fil`, `containsAny`, `parseCsvLine`, `urlDecode`.
+- M3 수정 전 회귀 테스트 추가; 라우트에서 로직 분리해 테스트 가능하게.
+
+## 미션 3 — 완료 기준
+
+- 「중립」 필터 결과가 `sent()`가 중립으로 집계한 항목과 일치할 것.
+- `logWarning`/`logError`가 올바른 alert 스타일로 페이지에 표시될 것.
+- textarea 멀티라인 입력이 analyze·표시·다운로드까지 보존될 것.
+
+## 코드 예시
+
+```cpp
+// BAD — 감정 규칙 이중 정의
+if (containsAny(txt, S_KEYWORDS[u8"중립"])) s = u8"중립";
+// GOOD — sent()와 fil()이 공유하는 classifySentiment()
+```
+
+```cpp
+// BAD — if (subEntry.first == "main") continue;
+// GOOD — kw()와 동일하게 main 매칭 (공유 matchesCategory())
+```
+
+```cpp
+// BAD — M3에서 main.cpp 전체를 새 아키텍처로 재작성
+// GOOD — classifySentiment + renderPage에 Logger level만 반영
+```
+
+## 빌드
+
+`cmake -S . -B build && cmake --build build` — Windows: CMakeLists의 `ws2_32` / `WINVER` 유지.
