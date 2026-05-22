@@ -1,3 +1,0 @@
-C:/DEV/FeedbackAnalyzer_11/build/CMakeFiles/feedback_analyzer.dir
-C:/DEV/FeedbackAnalyzer_11/build/CMakeFiles/edit_cache.dir
-C:/DEV/FeedbackAnalyzer_11/build/CMakeFiles/rebuild_cache.dir
