@@ -310,7 +310,7 @@ cmake --build build --target feedback_analyzer
 
 | 미션 | 보고서 (예정) | 내용 |
 |------|---------------|------|
-| 4 | — | 네이밍, 전역, 매직 값 |
+| 4 | [04_Refactoring_네이밍,전역,매직.md](04_Refactoring_네이밍,전역,매직.md) | 네이밍, 전역, 매직 값 |
 | 5 | — | 긴 함수, `containsAny` 중복 |
 | 6 | — | 팀 자율 리팩토링 1건 |
 | 7 | — | Trend + File DB |
@@ -330,3 +330,4 @@ cmake --build build --target feedback_analyzer
 | [docs/bug_fix.md](../docs/bug_fix.md) | M3 기술 요약 |
 | [docs/golden_master.md](../docs/golden_master.md) | 골든 v2 |
 | [docs/analyzer.md](../docs/analyzer.md) §9 | 알려진 이슈 |
+| [04_Refactoring_네이밍,전역,매직.md](04_Refactoring_네이밍,전역,매직.md) | M4 REFACTOR |

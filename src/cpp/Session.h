@@ -7,15 +7,16 @@
 class Session {
 private:
     static std::vector<Feedback> currentFeedbacks;
+    static std::vector<Feedback> filteredFeedbacks;
     static std::map<std::string, std::string> internalData;
     static std::map<std::string, std::string> filterOptions;
 
 public:
-    static void initSessionStateUgly() {
+    static void initSessionState() {
         // already initialized as static
     }
 
-    static std::vector<Feedback>& getOldDataFromSession(const std::string& key) {
+    static std::vector<Feedback>& getCurrentFeedbacks() {
         return currentFeedbacks;
     }
 
@@ -23,7 +24,11 @@ public:
         currentFeedbacks = feedbacks;
     }
 
-    static std::vector<Feedback>& getCurrentFeedbacks() {
-        return currentFeedbacks;
+    static void setFilteredFeedbacks(const std::vector<Feedback>& feedbacks) {
+        filteredFeedbacks = feedbacks;
+    }
+
+    static const std::vector<Feedback>& getFilteredFeedbacks() {
+        return filteredFeedbacks;
     }
 };

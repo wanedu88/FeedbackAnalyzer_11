@@ -8,13 +8,13 @@
 #include "UIComponents.h"
 #include "Logger.h"
 #include "ParseUtils.h"
+#include "AppConfig.h"
 #include <sstream>
 #include <fstream>
 #include <algorithm>
 #include <ctime>
 #include <iomanip>
 
-static std::vector<Feedback> fil_data;
 static TextAnalyzer textAnalyzer;
 static Filters filters;
 static FileHandler fileHandler;
@@ -103,7 +103,7 @@ static std::string renderPage(const std::string& success,
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
         input[type="text"], textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
-        textarea { height: 100px; resize: vertical; }
+        textarea { height: )" << AppConfig::kTextareaHeightPx << R"(px; resize: vertical; }
         button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px; }
         button:hover { background-color: #0056b3; }
         .btn-success { background-color: #28a745; }
@@ -227,14 +227,13 @@ static std::string renderPage(const std::string& success,
 
 int main() {
     Constants::init();
-    Filters::initFilterKeywords();
 
     httplib::Server svr;
 
     // GET /
     svr.Get("/", [](const httplib::Request&, httplib::Response& res) {
-        Session::initSessionStateUgly();
-        auto& feedbacks = Session::getOldDataFromSession("current_feedbacks");
+        Session::initSessionState();
+        auto& feedbacks = Session::getCurrentFeedbacks();
         std::string html = renderPage(u8"피드백 분석기 시작", "", "", {}, {}, feedbacks);
         res.set_content(html, "text/html; charset=UTF-8");
     });
@@ -267,8 +266,8 @@ int main() {
             std::map<std::string, int> sentimentResults, keywordResults;
 
             if (!feedbacks.empty()) {
-                sentimentResults = textAnalyzer.sent(feedbacks);
-                keywordResults = textAnalyzer.kw(feedbacks);
+                sentimentResults = textAnalyzer.countSentiments(feedbacks);
+                keywordResults = textAnalyzer.countKeywords(feedbacks);
                 Logger::logInfo(u8"감성 분석 완료");
                 Logger::logInfo(u8"키워드 분석 완료");
             }
@@ -325,11 +324,11 @@ int main() {
             std::string keyword = params["keyword"];
 
             if (!feedbacks.empty()) {
-                auto filtered = filters.fil(feedbacks, sentiment, keyword);
+                auto filtered = filters.filterFeedbacks(feedbacks, sentiment, keyword);
                 if (!filtered.empty()) {
-                    fil_data = filtered;
-                    auto sentimentResults = textAnalyzer.sent(filtered);
-                    auto keywordResults = textAnalyzer.kw(filtered);
+                    Session::setFilteredFeedbacks(filtered);
+                    auto sentimentResults = textAnalyzer.countSentiments(filtered);
+                    auto keywordResults = textAnalyzer.countKeywords(filtered);
                     Logger::logInfo(u8"필터링 결과: " + std::to_string(filtered.size()) + u8"개의 피드백");
                     std::string html = renderPage("", "", "", sentimentResults, keywordResults, filtered);
                     res.set_content(html, "text/html; charset=UTF-8");
@@ -356,15 +355,16 @@ int main() {
         // UTF-8 BOM
         csv << "\xEF\xBB\xBF";
         csv << "text\n";
-        for (const auto& iter : fil_data) {
+        for (const auto& iter : Session::getFilteredFeedbacks()) {
             csv << escapeCsvField(iter.getText()) << "\n";
         }
         res.set_header("Content-Disposition", "attachment; filename=\"filtered_feedback.csv\"");
         res.set_content(csv.str(), "text/csv; charset=UTF-8");
     });
 
-    Logger::logInfo(u8"서버가 http://localhost:8080 에서 시작됩니다.");
-    svr.listen("0.0.0.0", 8080);
+    Logger::logInfo(u8"서버가 http://localhost:" + std::to_string(AppConfig::kServerPort) +
+                    u8" 에서 시작됩니다.");
+    svr.listen(AppConfig::kServerHost, AppConfig::kServerPort);
 
     return 0;
 }

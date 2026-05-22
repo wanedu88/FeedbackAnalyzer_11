@@ -10,12 +10,12 @@ namespace {
 
 int neutralCountFromSent(const std::vector<Feedback>& data) {
     TextAnalyzer analyzer;
-    return analyzer.sent(data).at(u8"중립");
+    return analyzer.countSentiments(data).at(u8"중립");
 }
 
 size_t neutralCountFromFil(const std::vector<Feedback>& data) {
     Filters filters;
-    return filters.fil(data, u8"중립", u8"전체").size();
+    return filters.filterFeedbacks(data, u8"중립", u8"전체").size();
 }
 
 void ExpectSentNeutralCountEqualsFilNeutralCount(const std::vector<Feedback>& data) {

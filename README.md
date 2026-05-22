@@ -155,6 +155,8 @@ FeedbackAnalyzer_11/
 | [Report/02_1_RED.md](Report/02_1_RED.md) | 미션 2 RED |
 | [Report/02_2_GREEN.md](Report/02_2_GREEN.md) | 미션 2 GREEN |
 | [Report/02_3_Golden.md](Report/02_3_Golden.md) | 골든 마스터 보고서 |
+| [Report/03_BugFix.md](Report/03_BugFix.md) | 미션 3 버그 수정 |
+| [Report/04_Refactoring_네이밍,전역,매직.md](Report/04_Refactoring_네이밍,전역,매직.md) | 미션 4 리팩토링 |
 | [.cursorrules](.cursorrules) | Cursor 작업 규칙 |
 
 ## To Do List
@@ -180,9 +182,15 @@ FeedbackAnalyzer_11/
 - [x] `DISABLED_` 회귀 5건 해소, `ctest` **37/37 Pass**
 - [x] 골든 마스터 v2 ([tests/fixtures/golden_master.json](tests/fixtures/golden_master.json), [docs/golden_master.md](docs/golden_master.md))
 
-### 예정 (미션 4~8)
+### 완료 (미션 4)
 
-- [ ] 미션 4: 축약 네이밍·전역 상태·매직 값/하드코딩을 정리한다 (`fil`→`filterFeedbacks` 등)
+- [x] `fil`→`filterFeedbacks`, `sent`→`countSentiments`, `kw`→`countKeywords` 리네이밍
+- [x] `fil_data` → `Session::filteredFeedbacks`, `globalSent`/`globalKw` 제거
+- [x] `AppConfig` 상수화(포트·textarea 높이), 미사용 `S_KEYWORDS`/`initFilterKeywords` 제거
+- [x] `ctest` **37/37 Pass** 유지
+- [x] 미션 4 보고서 ([Report/04_Refactoring_네이밍,전역,매직.md](Report/04_Refactoring_네이밍,전역,매직.md))
+
+### 예정 (미션 5~8)
 - [ ] 미션 5: `main.cpp`/`renderPage` 긴 함수와 `containsAny` 중복을 줄인다
 - [ ] 미션 6: 팀 합의 리팩토링 1건을 추가한다 (예: 라우트·HTML 분리)
 - [ ] 미션 7: Trend 시각화와 File DB 연동을 구현한다 (`test_feedback_trend.csv`)
@@ -194,8 +202,9 @@ FeedbackAnalyzer_11/
 |------|------|------|
 | 2 | 테스트·커버리지 ≥ 90% | **완료** (32 Pass, 골든 마스터 v1) |
 | 3 | 로그·멀티라인·중립 필터 | **완료** (37 Pass, golden v2) |
+| 4 | 네이밍·전역·매직 값 | **완료** (37 Pass) |
 
-보고서: [Report/03_BugFix.md](Report/03_BugFix.md), [docs/bug_fix.md](docs/bug_fix.md). 작업 플랜: [docs/bug_fix_plan.md](docs/bug_fix_plan.md).
+보고서: [Report/03_BugFix.md](Report/03_BugFix.md), [Report/04_Refactoring_네이밍,전역,매직.md](Report/04_Refactoring_네이밍,전역,매직.md), [docs/bug_fix.md](docs/bug_fix.md). 작업 플랜: [docs/bug_fix_plan.md](docs/bug_fix_plan.md).
 
 ## 알려진 이슈 (미션 4+ 또는 명시 요청 시)
 

@@ -8,6 +8,5 @@ class FeedbackAnalyzerTestFixture : public ::testing::Test {
 protected:
     static void SetUpTestSuite() {
         Constants::init();
-        Filters::initFilterKeywords();
     }
 };
