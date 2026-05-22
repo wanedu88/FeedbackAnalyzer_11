@@ -105,6 +105,7 @@ FeedbackAnalyzer_11/
 │   ├── Filters.h/cpp
 │   ├── Constants.h/cpp
 │   ├── ParseUtils.h/cpp
+│   ├── HtmlRenderer.h/cpp
 │   ├── Session.h/cpp
 │   ├── UIComponents.h/cpp
 │   ├── Logger.h/cpp
@@ -149,6 +150,7 @@ FeedbackAnalyzer_11/
 |------|------|
 | [project_purpose.md](project_purpose.md) | 프로젝트 목적·스멜·8단계 미션 |
 | [docs/analyzer.md](docs/analyzer.md) | 아키텍처·동작·알려진 이슈 |
+| [docs/refactoring.md](docs/refactoring.md) | 미션 4·5 리팩토링 (네이밍·긴 함수) |
 | [docs/coverage.md](docs/coverage.md) | 커버리지 실행·COV 매핑 |
 | [docs/golden_master.md](docs/golden_master.md) | 골든 마스터 v1 |
 | [Report/01_분석.md](Report/01_분석.md) | 구조·미션 분석 |
@@ -157,6 +159,7 @@ FeedbackAnalyzer_11/
 | [Report/02_3_Golden.md](Report/02_3_Golden.md) | 골든 마스터 보고서 |
 | [Report/03_BugFix.md](Report/03_BugFix.md) | 미션 3 버그 수정 |
 | [Report/04_Refactoring_네이밍,전역,매직.md](Report/04_Refactoring_네이밍,전역,매직.md) | 미션 4 리팩토링 |
+| [Report/05_Refactoring_긴함수,중복.md](Report/05_Refactoring_긴함수,중복.md) | 미션 5 긴 함수·중복 |
 | [.cursorrules](.cursorrules) | Cursor 작업 규칙 |
 
 ## To Do List
@@ -190,8 +193,16 @@ FeedbackAnalyzer_11/
 - [x] `ctest` **37/37 Pass** 유지
 - [x] 미션 4 보고서 ([Report/04_Refactoring_네이밍,전역,매직.md](Report/04_Refactoring_네이밍,전역,매직.md))
 
-### 예정 (미션 5~8)
-- [ ] 미션 5: `main.cpp`/`renderPage` 긴 함수와 `containsAny` 중복을 줄인다
+### 완료 (미션 5)
+
+- [x] `renderPage` → `HtmlRenderer` (섹션별 `append*` 분해)
+- [x] `main()` 라우트 → `handleGetRoot` / `handlePostAnalyze` / `handlePostUpload` / `handlePostFilter` / `handleGetDownload`
+- [x] `parseForm`, `escapeHtml`, `escapeCsvField` → `ParseUtils`
+- [x] `containsAny`는 `SentimentClassifier` 단일 유지 (M3)
+- [x] `ctest` **37/37 Pass**, 도메인 coverage **100%**
+- [x] 미션 5 보고서 ([Report/05_Refactoring_긴함수,중복.md](Report/05_Refactoring_긴함수,중복.md))
+
+### 예정 (미션 6~8)
 - [ ] 미션 6: 팀 합의 리팩토링 1건을 추가한다 (예: 라우트·HTML 분리)
 - [ ] 미션 7: Trend 시각화와 File DB 연동을 구현한다 (`test_feedback_trend.csv`)
 - [ ] 미션 8: 팀 코드 리뷰·발표 자료를 준비한다
@@ -203,8 +214,9 @@ FeedbackAnalyzer_11/
 | 2 | 테스트·커버리지 ≥ 90% | **완료** (32 Pass, 골든 마스터 v1) |
 | 3 | 로그·멀티라인·중립 필터 | **완료** (37 Pass, golden v2) |
 | 4 | 네이밍·전역·매직 값 | **완료** (37 Pass) |
+| 5 | 긴 함수·중복 코드 | **완료** (37 Pass, `HtmlRenderer`) |
 
-보고서: [Report/03_BugFix.md](Report/03_BugFix.md), [Report/04_Refactoring_네이밍,전역,매직.md](Report/04_Refactoring_네이밍,전역,매직.md), [docs/bug_fix.md](docs/bug_fix.md). 작업 플랜: [docs/bug_fix_plan.md](docs/bug_fix_plan.md).
+보고서: [docs/bug_fix.md](docs/bug_fix.md), [docs/refactoring.md](docs/refactoring.md), [Report/03_BugFix.md](Report/03_BugFix.md), [Report/04_Refactoring_네이밍,전역,매직.md](Report/04_Refactoring_네이밍,전역,매직.md), [Report/05_Refactoring_긴함수,중복.md](Report/05_Refactoring_긴함수,중복.md). 작업 플랜: [docs/bug_fix_plan.md](docs/bug_fix_plan.md).
 
 ## 알려진 이슈 (미션 4+ 또는 명시 요청 시)
 

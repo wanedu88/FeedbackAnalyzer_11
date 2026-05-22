@@ -266,8 +266,8 @@ flowchart TB
 
 | 미션 | 내용 |
 |------|------|
-| 4 | 네이밍 (`fil`→`filterFeedbacks` 등), 전역·매직 값 |
-| 5 | `renderPage` 분리, `containsAny` 중복 제거 |
+| 4 | 네이밍·전역·매직 — [refactoring.md](refactoring.md) §3 |
+| 5 | 긴 함수·HtmlRenderer — [refactoring.md](refactoring.md) §4 |
 | 6 | 팀 자율 리팩토링 1건 |
 | 7 | Trend + File DB |
 
@@ -283,4 +283,5 @@ flowchart TB
 | [Report/02_1_RED.md](../Report/02_1_RED.md) | M3 RED 회귀 스펙 |
 | [Report/02_2_GREEN.md](../Report/02_2_GREEN.md) | M2 GREEN 보고서 |
 | [Report/03_BugFix.md](../Report/03_BugFix.md) | M3 공식 보고서 (본 문서의 Report판) |
+| [refactoring.md](refactoring.md) | 미션 4·5 REFACTOR 통합 |
 | [golden_master.md](golden_master.md) | 골든 마스터 v1→v2 |

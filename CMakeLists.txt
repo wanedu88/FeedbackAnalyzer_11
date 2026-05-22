@@ -14,6 +14,7 @@ add_executable(feedback_analyzer
     src/cpp/UIComponents.cpp
     src/cpp/ParseUtils.cpp
     src/cpp/SentimentClassifier.cpp
+    src/cpp/HtmlRenderer.cpp
 )
 
 target_include_directories(feedback_analyzer PRIVATE src/cpp)

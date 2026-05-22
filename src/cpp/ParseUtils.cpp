@@ -44,4 +44,56 @@ std::vector<std::string> parseCsvLine(const std::string& line) {
     return fields;
 }
 
+std::map<std::string, std::string> parseForm(const std::string& body) {
+    std::map<std::string, std::string> params;
+    std::istringstream stream(body);
+    std::string pair;
+    while (std::getline(stream, pair, '&')) {
+        auto eq = pair.find('=');
+        if (eq != std::string::npos) {
+            params[urlDecode(pair.substr(0, eq))] = urlDecode(pair.substr(eq + 1));
+        }
+    }
+    return params;
+}
+
+std::string escapeHtml(const std::string& s) {
+    std::string out;
+    for (char c : s) {
+        switch (c) {
+            case '&': out += "&amp;"; break;
+            case '<': out += "&lt;"; break;
+            case '>': out += "&gt;"; break;
+            case '"': out += "&quot;"; break;
+            case '\n': out += "<br>"; break;
+            case '\r': break;
+            default: out += c;
+        }
+    }
+    return out;
+}
+
+std::string escapeCsvField(const std::string& s) {
+    bool needQuote = false;
+    for (char c : s) {
+        if (c == '"' || c == ',' || c == '\n' || c == '\r') {
+            needQuote = true;
+            break;
+        }
+    }
+    if (!needQuote) {
+        return s;
+    }
+    std::string out = "\"";
+    for (char c : s) {
+        if (c == '"') {
+            out += "\"\"";
+        } else {
+            out += c;
+        }
+    }
+    out += "\"";
+    return out;
+}
+
 }  // namespace ParseUtils

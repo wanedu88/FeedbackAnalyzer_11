@@ -303,7 +303,7 @@ svr.listen(AppConfig::kServerHost, AppConfig::kServerPort);
 
 | 미션 | 보고서 (예정) | 내용 |
 |------|---------------|------|
-| 5 | — | `renderPage`·`containsAny` 중복 |
+| 5 | [05_Refactoring_긴함수,중복.md](05_Refactoring_긴함수,중복.md) | `renderPage`·핸들러·`ParseUtils` |
 | 6 | — | 팀 자율 리팩토링 1건 |
 | 7 | — | Trend + File DB |
 | 8 | — | 팀 리뷰·발표 |
