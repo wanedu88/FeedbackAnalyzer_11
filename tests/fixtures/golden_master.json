@@ -1,0 +1,574 @@
+{
+  "$schema": "feedback-analyzer/golden-master/v2",
+  "version": "2.0.0",
+  "mission": 3,
+  "generated_at": "2026-05-22",
+  "m3_changes": [
+    "SentimentClassifier::classifySentiment shared by sent() and fil()",
+    "Filters::fil includes CATEGORY_KEYWORDS main sub-map",
+    "Logger pageWarning/pageError surfaced in renderPage",
+    "Multiline feedback list + CSV field escaping in main.cpp"
+  ],
+  "encoding": "utf-8",
+  "utf8_rule": "Korean stored as UTF-8 in file body; optional \\uXXXX for ASCII-only parsers",
+  "source_reports": [
+    "Report/02_2_GREEN.md",
+    "Report/02_1_RED.md",
+    "docs/coverage.md"
+  ],
+  "ctest_summary": {
+    "total_registered": 37,
+    "passed": 37,
+    "failed": 0,
+    "disabled_not_run": 0,
+    "total_test_time_sec": 1.31,
+    "note": "Mission 3 GREEN: all tests active and passing"
+  },
+  "coverage_summary": {
+    "tool": "gcov + scripts/parse_domain_coverage.py",
+    "script": "scripts/run_coverage.ps1",
+    "domain_files": [
+      "Constants.cpp",
+      "Filters.cpp",
+      "ParseUtils.cpp",
+      "SentimentClassifier.cpp",
+      "Filters.h",
+      "TextAnalyzer.h",
+      "TextAnalyzer.cpp"
+    ],
+    "lines_executed": 134,
+    "lines_total": 134,
+    "line_percent": 100.0,
+    "threshold_percent": 90,
+    "files_below_threshold": []
+  },
+  "m3_regression_summary": {
+    "command": "ctest --output-on-failure",
+    "passed": 37,
+    "failed": 0,
+    "note": "REG-0~3 and F05 promoted from bug_m3_red to baseline"
+  },
+  "cases": [
+    {
+      "id": "S-01",
+      "gtest_name": "S01_Sent_EmptyList_ReturnsZeroCounts",
+      "source_file": "tests/text_analyzer_test.cpp",
+      "api": "TextAnalyzer::sent",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [] },
+      "when": { "call": "sent" },
+      "expected": { "긍정": 0, "중립": 0, "부정": 0 },
+      "status": "baseline"
+    },
+    {
+      "id": "S-02",
+      "gtest_name": "S02_Sent_PositiveKeyword_CountsPositive",
+      "source_file": "tests/text_analyzer_test.cpp",
+      "api": "TextAnalyzer::sent",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "최고입니다 감사합니다" }] },
+      "when": { "call": "sent" },
+      "expected": { "긍정": 1, "중립": 0, "부정": 0 },
+      "status": "baseline"
+    },
+    {
+      "id": "S-03",
+      "gtest_name": "S03_Sent_NegativeKeyword_CountsNegative",
+      "source_file": "tests/text_analyzer_test.cpp",
+      "api": "TextAnalyzer::sent",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "최악 불만 환불" }] },
+      "when": { "call": "sent" },
+      "expected": { "긍정": 0, "중립": 0, "부정": 1 },
+      "status": "baseline"
+    },
+    {
+      "id": "S-04",
+      "gtest_name": "S04_Sent_NoKeyword_DefaultsNeutral",
+      "source_file": "tests/text_analyzer_test.cpp",
+      "api": "TextAnalyzer::sent",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "오늘 날씨 좋음" }] },
+      "when": { "call": "sent" },
+      "expected": { "긍정": 0, "중립": 1, "부정": 0 },
+      "status": "baseline"
+    },
+    {
+      "id": "S-05",
+      "gtest_name": "S05_Sent_PositiveBeatsNegative",
+      "source_file": "tests/text_analyzer_test.cpp",
+      "api": "TextAnalyzer::sent",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "좋은데 나쁘진 않음" }] },
+      "when": { "call": "sent" },
+      "expected": { "긍정": 1, "중립": 0, "부정": 0 },
+      "status": "baseline"
+    },
+    {
+      "id": "S-06",
+      "gtest_name": "S06_Sent_NeutralKeywordStillCountsNeutral",
+      "source_file": "tests/text_analyzer_test.cpp",
+      "api": "TextAnalyzer::sent",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "보통 그냥 무난" }] },
+      "when": { "call": "sent" },
+      "expected": { "긍정": 0, "중립": 1, "부정": 0 },
+      "note": "Constants::SENTIMENT_KEYWORDS has no neutral bucket; defaults to neutral",
+      "status": "baseline"
+    },
+    {
+      "id": "K-01",
+      "gtest_name": "K01_Kw_EmptyList_AllCategoriesZero",
+      "source_file": "tests/text_analyzer_test.cpp",
+      "api": "TextAnalyzer::kw",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [] },
+      "when": { "call": "kw" },
+      "expected": { "배송": 0, "품질": 0, "가격": 0, "서비스": 0, "사용성": 0 },
+      "status": "baseline"
+    },
+    {
+      "id": "K-02",
+      "gtest_name": "K02_Kw_MainKeyword_MatchesCategory",
+      "source_file": "tests/text_analyzer_test.cpp",
+      "api": "TextAnalyzer::kw",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "배송이 빨라요" }] },
+      "when": { "call": "kw" },
+      "expected": { "배송": { "min": 1 } },
+      "status": "baseline"
+    },
+    {
+      "id": "K-03",
+      "gtest_name": "K03_Kw_SubKeywordOnly_StillMatches",
+      "source_file": "tests/text_analyzer_test.cpp",
+      "api": "TextAnalyzer::kw",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "일반적인 의견입니다" }] },
+      "when": { "call": "kw" },
+      "expected": { "배송": 0 },
+      "note": "kw() inspects CATEGORY_KEYWORDS main sub-map only",
+      "status": "baseline"
+    },
+    {
+      "id": "K-04",
+      "gtest_name": "K04_Kw_MultipleCategories",
+      "source_file": "tests/text_analyzer_test.cpp",
+      "api": "TextAnalyzer::kw",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "배송 빠르고 가격 저렴" }] },
+      "when": { "call": "kw" },
+      "expected": { "배송": { "min": 1 }, "가격": { "min": 1 } },
+      "status": "baseline"
+    },
+    {
+      "id": "F-01",
+      "gtest_name": "F01_Fil_SentimentAll_ReturnsAll",
+      "source_file": "tests/filters_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": {
+        "feedbacks": [
+          { "text": "최고입니다 감사합니다" },
+          { "text": "최악 불만 환불" },
+          { "text": "보통 그냥 무난" }
+        ]
+      },
+      "when": { "sFilter": "전체", "kFilter": "전체" },
+      "expected": { "result_size": 3 },
+      "status": "baseline"
+    },
+    {
+      "id": "F-02",
+      "gtest_name": "F02_Fil_PositiveOnly",
+      "source_file": "tests/filters_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": {
+        "feedbacks": [
+          { "text": "최고입니다" },
+          { "text": "최악 불만" }
+        ]
+      },
+      "when": { "sFilter": "긍정", "kFilter": "전체" },
+      "expected": { "result_size": 1, "result_contains": ["최고"] },
+      "status": "baseline"
+    },
+    {
+      "id": "F-03",
+      "gtest_name": "F03_Fil_NeutralUsesFilterKeywords",
+      "source_file": "tests/filters_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "보통 그냥 무난" }] },
+      "when": { "sFilter": "중립", "kFilter": "전체" },
+      "expected": { "result_size": { "min": 1 } },
+      "status": "baseline"
+    },
+    {
+      "id": "F-06",
+      "gtest_name": "F06_Fil_KeywordSubOnly_Matches",
+      "source_file": "tests/filters_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "택배가 왔어요" }] },
+      "when": { "sFilter": "전체", "kFilter": "배송" },
+      "expected": { "result_size": { "min": 1 } },
+      "status": "baseline"
+    },
+    {
+      "id": "F-07",
+      "gtest_name": "F07_Fil_Combo_SentimentAndKeyword",
+      "source_file": "tests/filters_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": {
+        "feedbacks": [
+          { "text": "최고입니다 택배 빠름" },
+          { "text": "최악 불만" },
+          { "text": "택배만 언급" }
+        ]
+      },
+      "when": { "sFilter": "긍정", "kFilter": "배송" },
+      "expected": {
+        "result_size": 1,
+        "result_contains": ["최고", "택배"]
+      },
+      "status": "baseline"
+    },
+    {
+      "id": "U-01",
+      "gtest_name": "U01_UrlDecode_PlusToSpace",
+      "source_file": "tests/parse_utils_test.cpp",
+      "api": "ParseUtils::urlDecode",
+      "fixture": "ParseUtilsTest",
+      "given": { "input": "hello+world" },
+      "when": { "call": "urlDecode" },
+      "expected": { "output": "hello world" },
+      "status": "baseline"
+    },
+    {
+      "id": "U-02",
+      "gtest_name": "U02_UrlDecode_PercentUtf8",
+      "source_file": "tests/parse_utils_test.cpp",
+      "api": "ParseUtils::urlDecode",
+      "fixture": "ParseUtilsTest",
+      "given": { "input": "%EB%82%A0" },
+      "when": { "call": "urlDecode" },
+      "expected": { "output": "날" },
+      "status": "baseline"
+    },
+    {
+      "id": "U-03",
+      "gtest_name": "U03_UrlDecode_InvalidPercent_KeepsChar",
+      "source_file": "tests/parse_utils_test.cpp",
+      "api": "ParseUtils::urlDecode",
+      "fixture": "ParseUtilsTest",
+      "given": { "input": "%GG" },
+      "when": { "call": "urlDecode" },
+      "expected": { "output": "%GG" },
+      "status": "baseline"
+    },
+    {
+      "id": "C-01",
+      "gtest_name": "C01_ParseCsv_SimpleComma",
+      "source_file": "tests/parse_utils_test.cpp",
+      "api": "ParseUtils::parseCsvLine",
+      "fixture": "ParseUtilsTest",
+      "given": { "input": "a,b,c" },
+      "when": { "call": "parseCsvLine" },
+      "expected": { "fields": ["a", "b", "c"] },
+      "status": "baseline"
+    },
+    {
+      "id": "C-02",
+      "gtest_name": "C02_ParseCsv_QuotedComma",
+      "source_file": "tests/parse_utils_test.cpp",
+      "api": "ParseUtils::parseCsvLine",
+      "fixture": "ParseUtilsTest",
+      "given": { "input": "\"a,b\",c" },
+      "when": { "call": "parseCsvLine" },
+      "expected": { "fields": ["a,b", "c"] },
+      "status": "baseline"
+    },
+    {
+      "id": "C-03",
+      "gtest_name": "C03_ParseCsv_EmptyField",
+      "source_file": "tests/parse_utils_test.cpp",
+      "api": "ParseUtils::parseCsvLine",
+      "fixture": "ParseUtilsTest",
+      "given": { "input": "a,,c" },
+      "when": { "call": "parseCsvLine" },
+      "expected": { "fields": ["a", "", "c"] },
+      "status": "baseline"
+    },
+    {
+      "id": "C-04",
+      "gtest_name": "C04_ParseCsv_QuotesToggle",
+      "source_file": "tests/parse_utils_test.cpp",
+      "api": "ParseUtils::parseCsvLine",
+      "fixture": "ParseUtilsTest",
+      "given": { "input": "\"\"\"a\"\"\"" },
+      "when": { "call": "parseCsvLine" },
+      "expected": { "fields": ["a"] },
+      "status": "baseline"
+    },
+    {
+      "id": "COV-G01",
+      "gtest_name": "COV_G01_GlobalSent_SecondCallOverwrites",
+      "source_file": "tests/coverage_gap_test.cpp",
+      "api": "TextAnalyzer::sent",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": {
+        "first": [{ "text": "최고입니다" }],
+        "second": [{ "text": "최악 불만" }]
+      },
+      "when": { "call": "sent", "times": 2 },
+      "expected": {
+        "first": { "긍정": 1 },
+        "second": { "부정": 1, "긍정": 0 }
+      },
+      "status": "baseline"
+    },
+    {
+      "id": "COV-G02",
+      "gtest_name": "COV_G02_GlobalKw_SecondCallOverwrites",
+      "source_file": "tests/coverage_gap_test.cpp",
+      "api": "TextAnalyzer::kw",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": {
+        "first": [{ "text": "배송 빠름" }],
+        "second": [{ "text": "가격 저렴" }]
+      },
+      "when": { "call": "kw", "times": 2 },
+      "expected": {
+        "first": { "배송": { "min": 1 }, "가격": 0 },
+        "second": { "가격": { "min": 1 }, "배송": 0 }
+      },
+      "status": "baseline"
+    },
+    {
+      "id": "COV-TA01",
+      "gtest_name": "COV_TA01_ContainsAny_NoMatch_ReturnsNeutral",
+      "source_file": "tests/coverage_gap_test.cpp",
+      "api": "TextAnalyzer::sent",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "키워드없는일반문장xyz" }] },
+      "when": { "call": "sent" },
+      "expected": { "중립": 1, "긍정": 0, "부정": 0 },
+      "status": "baseline"
+    },
+    {
+      "id": "COV-TA02",
+      "gtest_name": "COV_TA02_Kw_ContainsAny_NoCategoryMatch",
+      "source_file": "tests/coverage_gap_test.cpp",
+      "api": "TextAnalyzer::kw",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "카테고리무관" }] },
+      "when": { "call": "kw" },
+      "expected": { "배송": 0, "품질": 0 },
+      "status": "baseline"
+    },
+    {
+      "id": "COV-F01",
+      "gtest_name": "COV_F01_Fil_NegativeOnly",
+      "source_file": "tests/coverage_gap_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": {
+        "feedbacks": [
+          { "text": "최고입니다" },
+          { "text": "최악 환불" }
+        ]
+      },
+      "when": { "sFilter": "부정", "kFilter": "전체" },
+      "expected": { "result_size": 1, "result_contains": ["최악"] },
+      "status": "baseline"
+    },
+    {
+      "id": "COV-F02",
+      "gtest_name": "COV_F02_Fil_InvalidKeywordCategory",
+      "source_file": "tests/coverage_gap_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "택배 빠름" }] },
+      "when": { "sFilter": "전체", "kFilter": "없는카테고리" },
+      "expected": { "result_size": 0 },
+      "status": "baseline"
+    },
+    {
+      "id": "COV-F03",
+      "gtest_name": "COV_F03_Fil_KeywordNoSubMatch_EmptyResult",
+      "source_file": "tests/coverage_gap_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "최고입니다" }] },
+      "when": { "sFilter": "전체", "kFilter": "배송" },
+      "expected": { "result_size": 0 },
+      "status": "baseline"
+    },
+    {
+      "id": "COV-F04",
+      "gtest_name": "COV_F04_Fil_SentimentExcludesNonMatching",
+      "source_file": "tests/coverage_gap_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "최악 불만" }] },
+      "when": { "sFilter": "긍정", "kFilter": "전체" },
+      "expected": { "result_size": 0 },
+      "status": "baseline"
+    },
+    {
+      "id": "COV-F05",
+      "gtest_name": "COV_F05_Fil_CoutLoopRunsOnNonEmptyResult",
+      "source_file": "tests/coverage_gap_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": {
+        "feedbacks": [
+          { "text": "보통" },
+          { "text": "무난" }
+        ]
+      },
+      "when": { "sFilter": "중립", "kFilter": "전체" },
+      "expected": { "result_size": { "min": 1 } },
+      "status": "baseline"
+    },
+    {
+      "id": "COV-F06",
+      "gtest_name": "COV_F06_Fil_CoutLoopSkippedOnEmptyResult",
+      "source_file": "tests/coverage_gap_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "최고입니다" }] },
+      "when": { "sFilter": "부정", "kFilter": "전체" },
+      "expected": { "result_size": 0 },
+      "status": "baseline"
+    },
+    {
+      "id": "REG-1",
+      "gtest_name": "Regression_NeutralFilterMismatch_Case1_Gwaenchan",
+      "gtest_disabled_name": "DISABLED_Regression_NeutralFilterMismatch_Case1_Gwaenchan",
+      "source_file": "tests/regression_neutral_filter_test.cpp",
+      "api": "sent vs fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "괜찮해요" }] },
+      "when": { "sent": "sent()", "fil": "fil(중립, 전체)" },
+      "pre_m3": {
+        "sent_neutral": 1,
+        "fil_neutral_size": 0,
+        "mismatch": true,
+        "gtest_when_enabled": "fail",
+        "reason": "S_KEYWORDS lists 괜찮 under 긍정; fil classifies as positive not neutral"
+      },
+      "post_m3": {
+        "sent_neutral": 1,
+        "fil_neutral_size": 1,
+        "mismatch": false,
+        "note": "classifySentiment shared by sent() and fil()"
+      },
+      "status": "baseline"
+    },
+    {
+      "id": "REG-2",
+      "gtest_name": "Regression_NeutralFilterMismatch_Case2_GwaenchanInSentence",
+      "gtest_disabled_name": "DISABLED_Regression_NeutralFilterMismatch_Case2_GwaenchanInSentence",
+      "source_file": "tests/regression_neutral_filter_test.cpp",
+      "api": "sent vs fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "괜찮한데 배송은 보통이에요" }] },
+      "when": { "sent": "sent()", "fil": "fil(중립, 전체)" },
+      "pre_m3": {
+        "sent_neutral": 1,
+        "fil_neutral_size": 0,
+        "mismatch": true,
+        "gtest_when_enabled": "fail"
+      },
+      "post_m3": {
+        "sent_neutral": 1,
+        "fil_neutral_size": 1,
+        "mismatch": false
+      },
+      "status": "baseline"
+    },
+    {
+      "id": "REG-3",
+      "gtest_name": "Regression_NeutralFilterMismatch_Case3_NoKeywordDefaultsNeutral",
+      "gtest_disabled_name": "DISABLED_Regression_NeutralFilterMismatch_Case3_NoKeywordDefaultsNeutral",
+      "source_file": "tests/regression_neutral_filter_test.cpp",
+      "api": "sent vs fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "오늘 날씨 좋음" }] },
+      "when": { "sent": "sent()", "fil": "fil(중립, 전체)" },
+      "pre_m3": {
+        "sent_neutral": 1,
+        "fil_neutral_size": 1,
+        "mismatch": false,
+        "gtest_when_enabled": "pass",
+        "note": "control case; should remain pass after M3"
+      },
+      "post_m3": {
+        "sent_neutral": 1,
+        "fil_neutral_size": 1,
+        "mismatch": false
+      },
+      "status": "baseline"
+    },
+    {
+      "id": "REG-0",
+      "gtest_name": "Regression_NeutralFilterMismatch",
+      "gtest_disabled_name": "DISABLED_Regression_NeutralFilterMismatch",
+      "source_file": "tests/regression_neutral_filter_test.cpp",
+      "api": "sent vs fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": {
+        "feedbacks": [
+          { "text": "괜찮해요" },
+          { "text": "오늘 날씨 좋음" },
+          { "text": "보통 그냥 무난" }
+        ]
+      },
+      "when": { "sent": "sent()", "fil": "fil(중립, 전체)" },
+      "pre_m3": {
+        "sent_neutral": 3,
+        "fil_neutral_size": 2,
+        "mismatch": true,
+        "gtest_when_enabled": "fail",
+        "per_item": [
+          { "text": "괜찮해요", "sent": "중립", "fil_neutral_match": false },
+          { "text": "오늘 날씨 좋음", "sent": "중립", "fil_neutral_match": true },
+          { "text": "보통 그냥 무난", "sent": "중립", "fil_neutral_match": true }
+        ]
+      },
+      "post_m3": {
+        "sent_neutral": 3,
+        "fil_neutral_size": 3,
+        "mismatch": false
+      },
+      "status": "baseline"
+    },
+    {
+      "id": "F-05",
+      "gtest_name": "F05_KeywordSkipsMain",
+      "gtest_disabled_name": "DISABLED_F05_KeywordSkipsMain",
+      "source_file": "tests/filters_test.cpp",
+      "api": "Filters::fil",
+      "fixture": "FeedbackAnalyzerTestFixture",
+      "given": { "feedbacks": [{ "text": "배송" }] },
+      "when": { "sFilter": "전체", "kFilter": "배송" },
+      "pre_m3": {
+        "result_size": 1,
+        "gtest_when_enabled": "pass",
+        "match_via": "status_sub_keyword_not_main",
+        "intended_bug": "fil() skips CATEGORY_KEYWORDS main sub-map (line 56 continue)"
+      },
+      "post_m3": {
+        "result_size": { "min": 1 },
+        "match_via": "main_sub_map",
+        "note": "fix main skip; consider sub-only sample or EXPECT_EQ(0) before fix"
+      },
+      "expected": { "result_size": { "min": 1 } },
+      "status": "baseline"
+    }
+  ]
+}
