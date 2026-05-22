@@ -19,3 +19,45 @@ void Filters::initFilterKeywords() {
         u8"적당", u8"나쁘지 않", u8"특별", u8"없"
     };
 }
+
+std::vector<Feedback> Filters::fil(const std::vector<Feedback>& dataList,
+                                     const std::string& sFilter,
+                                     const std::string& kFilter) {
+    std::vector<Feedback> tmpFiltered;
+
+    if (sFilter != u8"전체") {
+        for (const auto& item : dataList) {
+            const std::string currentSentiment =
+                SentimentClassifier::classifySentiment(item.getText());
+            if (currentSentiment == sFilter) {
+                tmpFiltered.push_back(item);
+            }
+        }
+    } else {
+        tmpFiltered = dataList;
+    }
+
+    std::vector<Feedback> finalFiltered;
+    if (kFilter != u8"전체") {
+        for (const auto& item : tmpFiltered) {
+            std::string txt = item.getText();
+            if (Constants::CATEGORY_KEYWORDS.count(kFilter)) {
+                const auto& catMap = Constants::CATEGORY_KEYWORDS[kFilter];
+                for (const auto& subEntry : catMap) {
+                    if (SentimentClassifier::containsAny(txt, subEntry.second)) {
+                        finalFiltered.push_back(item);
+                        break;
+                    }
+                }
+            }
+        }
+    } else {
+        finalFiltered = tmpFiltered;
+    }
+
+    for (const auto& i : finalFiltered) {
+        std::cout << i.getText() << std::endl;
+    }
+
+    return finalFiltered;
+}

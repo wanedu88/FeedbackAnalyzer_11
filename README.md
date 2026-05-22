@@ -171,14 +171,14 @@ FeedbackAnalyzer_11/
 - [x] 골든 마스터 v1 작성 (`tests/fixtures/golden_master.json`, `Report/02_3_Golden.md`)
 - [x] 미션 2 보고서 정리 (`Report/02_1_RED.md`, `Report/02_2_GREEN.md`)
 
-### 진행 중 (미션 3)
+### 완료 (미션 3)
 
-- [ ] `classifySentiment`로 `sent()`와 `fil()` 감정 규칙을 단일화한다
-- [ ] 「중립」 필터 결과가 `sent()` 중립 집계와 일치함을 확인한다
-- [ ] `logWarning`/`logError`를 페이지 alert 스타일로 표시한다
-- [ ] textarea 멀티라인 입력을 analyze·표시·CSV 다운로드까지 보존한다
-- [ ] `DISABLED_` 회귀 5건을 해소하고 `ctest` 37/37 Pass를 확인한다 ([Report/02_1_RED.md](Report/02_1_RED.md) §4.5)
-- [ ] 골든 마스터를 v2로 갱신한다 ([docs/golden_master.md](docs/golden_master.md))
+- [x] `SentimentClassifier::classifySentiment`로 `sent()`와 `fil()` 감정 규칙 단일화
+- [x] 「중립」 필터 결과가 `sent()` 중립 집계와 일치 (REG 회귀 4건 Pass)
+- [x] `logWarning`/`logError`를 페이지 alert 스타일로 표시 (`Logger` page 버퍼)
+- [x] textarea 멀티라인 입력을 analyze·표시·CSV 다운로드까지 보존
+- [x] `DISABLED_` 회귀 5건 해소, `ctest` **37/37 Pass**
+- [x] 골든 마스터 v2 ([tests/fixtures/golden_master.json](tests/fixtures/golden_master.json), [docs/golden_master.md](docs/golden_master.md))
 
 ### 예정 (미션 4~8)
 
@@ -193,14 +193,14 @@ FeedbackAnalyzer_11/
 | 미션 | 내용 | 상태 |
 |------|------|------|
 | 2 | 테스트·커버리지 ≥ 90% | **완료** (32 Pass, 골든 마스터 v1) |
-| 3 | 로그·멀티라인·중립 필터 | 예정 |
+| 3 | 로그·멀티라인·중립 필터 | **완료** (37 Pass, golden v2) |
 
-미션 3에서 `DISABLED_` 회귀 5건(중립 필터 4 + F05 1)을 해소하는 것이 목표입니다. 스펙은 [Report/02_1_RED.md](Report/02_1_RED.md) §4.5를 참고하세요.
+보고서: [Report/03_BugFix.md](Report/03_BugFix.md), [docs/bug_fix.md](docs/bug_fix.md). 작업 플랜: [docs/bug_fix_plan.md](docs/bug_fix_plan.md).
 
-## 알려진 이슈 (미션 3 대상)
+## 알려진 이슈 (미션 4+ 또는 명시 요청 시)
 
-- **중립 필터 불일치**: `sent()`와 `fil(중립)`이 서로 다른 감정 키워드 집합을 사용해 통계와 필터 결과가 어긋날 수 있습니다.
-- **키워드 `main` 스킵**: `Filters::fil`이 카테고리 `main` 서브맵을 건너뛰어 `kw()`와 동작이 다릅니다.
+- `/upload` 후 감성 분석 생략, `fil_data` 잔존 가능
+- CSV 다운로드는 M3에서 필드 이스케이프 적용; 대량 데이터·Trend는 미션 7
 
 ## CSV 파일 형식
 

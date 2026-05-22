@@ -1,11 +1,11 @@
-# 골든 마스터 (Golden Master) — 미션 2
+# 골든 마스터 (Golden Master) — 미션 2 / 3
 
 | 항목 | 내용 |
 |------|------|
 | 기계용 스냅샷 | [tests/fixtures/golden_master.json](../tests/fixtures/golden_master.json) |
-| 미션 | 2 (GREEN 회귀 기준선) |
+| 현재 버전 | **v2.0.0** (미션 3 GREEN) |
 | 생성일 | 2026-05-22 |
-| 선행 보고서 | [Report/02_2_GREEN.md](../Report/02_2_GREEN.md), [Report/02_1_RED.md](../Report/02_1_RED.md) |
+| 선행 보고서 | [Report/02_2_GREEN.md](../Report/02_2_GREEN.md), [docs/bug_fix_plan.md](bug_fix_plan.md) |
 
 ---
 
@@ -32,10 +32,10 @@ ctest --output-on-failure
 | 항목 | 값 |
 |------|-----|
 | 등록 테스트 | 37 |
-| **Passed** | **32** |
+| **Passed** | **37** |
 | **Failed** | **0** |
-| **Disabled (Not Run)** | **5** |
-| 요약 | `100% tests passed, 0 tests failed out of 32` |
+| **Disabled (Not Run)** | **0** |
+| 요약 | `100% tests passed, 0 tests failed out of 37` |
 
 ### 커버리지
 
@@ -48,27 +48,28 @@ ctest --output-on-failure
 | 도메인 line | **134/134 (100.0%)** |
 | 90% 미만 파일 | 없음 |
 
-### DISABLED 수동 실행
+### 미션 3 회귀 (v2)
 
 ```powershell
-.\build\feedback_analyzer_tests.exe --gtest_filter="*Regression_Neutral*:*F05_KeywordSkipsMain*" --gtest_also_run_disabled_tests
+cd build
+ctest --output-on-failure
 ```
 
 | 결과 | 건수 |
 |------|------|
-| Pass | 2 (REG-3, F-05) |
-| Fail | 3 (REG-1, REG-2, REG-0) |
+| Pass | **37** (REG-0~3, F-05 포함) |
+| Fail | 0 |
 
 ---
 
 ## 3. 미션 2 vs 미션 3
 
-| 구분 | M2 골든 마스터 v1 | M3 이후 v2 |
-|------|-------------------|------------|
-| **baseline** | 32건 (활성 Pass) | 37건 (DISABLED 포함 Pass) |
-| **bug_m3_red** | 5건 (`pre_m3` 실측) | 0건 (baseline 승격) |
-| **코드 변경** | 없음 | `classifySentiment`, `main` 키워드 스킵 수정 |
-| **ctest** | 32 Pass, 5 Disabled | 37 Pass, 0 Disabled |
+| 구분 | M2 골든 마스터 v1 | M3 골든 마스터 v2 (현재) |
+|------|-------------------|-------------------------|
+| **baseline** | 32건 (활성 Pass) | **37건** (전부 Pass) |
+| **bug_m3_red** | 5건 (`pre_m3` 실측) | 0건 (baseline 승격 완료) |
+| **코드 변경** | 없음 | `SentimentClassifier`, F05 `main` 매칭, Logger·멀티라인 |
+| **ctest** | 32 Pass, 5 Disabled | **37 Pass**, 0 Disabled |
 
 ```mermaid
 flowchart LR

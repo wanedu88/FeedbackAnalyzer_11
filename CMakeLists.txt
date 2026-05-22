@@ -13,6 +13,7 @@ add_executable(feedback_analyzer
     src/cpp/TextAnalyzer.cpp
     src/cpp/UIComponents.cpp
     src/cpp/ParseUtils.cpp
+    src/cpp/SentimentClassifier.cpp
 )
 
 target_include_directories(feedback_analyzer PRIVATE src/cpp)
@@ -48,6 +49,7 @@ add_executable(feedback_analyzer_tests
     src/cpp/Filters.cpp
     src/cpp/TextAnalyzer.cpp
     src/cpp/ParseUtils.cpp
+    src/cpp/SentimentClassifier.cpp
 )
 
 target_include_directories(feedback_analyzer_tests PRIVATE src/cpp)

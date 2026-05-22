@@ -41,7 +41,7 @@ TEST_F(FeedbackAnalyzerTestFixture, F02_Fil_PositiveOnly) {
 
 TEST_F(FeedbackAnalyzerTestFixture, F03_Fil_NeutralUsesFilterKeywords) {
     Filters filters;
-    // "괜찮"은 S_KEYWORDS 긍정에도 있어 제외; 중립 전용 토큰만 사용
+    // M3: sent/fil share classifySentiment; neutral tokens without 긍/부 keywords
     std::vector<Feedback> data = {Feedback(u8"보통 그냥 무난")};
 
     auto result = filters.fil(data, u8"중립", u8"전체");
@@ -51,8 +51,8 @@ TEST_F(FeedbackAnalyzerTestFixture, F03_Fil_NeutralUsesFilterKeywords) {
 
 // M3 중립 필터 회귀: tests/regression_neutral_filter_test.cpp 참고
 
-// Known bug (M3): keyword filter skips CATEGORY_KEYWORDS["main"] sub-map.
-TEST_F(FeedbackAnalyzerTestFixture, DISABLED_F05_KeywordSkipsMain) {
+// M3: keyword filter includes CATEGORY_KEYWORDS["main"] (matches kw() behavior).
+TEST_F(FeedbackAnalyzerTestFixture, F05_KeywordSkipsMain) {
     Filters filters;
     std::vector<Feedback> data = {Feedback(u8"배송")};
 

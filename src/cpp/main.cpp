@@ -51,9 +51,34 @@ static std::string escapeHtml(const std::string& s) {
             case '<': out += "&lt;"; break;
             case '>': out += "&gt;"; break;
             case '"': out += "&quot;"; break;
+            case '\n': out += "<br>"; break;
+            case '\r': break;
             default: out += c;
         }
     }
+    return out;
+}
+
+static std::string escapeCsvField(const std::string& s) {
+    bool needQuote = false;
+    for (char c : s) {
+        if (c == '"' || c == ',' || c == '\n' || c == '\r') {
+            needQuote = true;
+            break;
+        }
+    }
+    if (!needQuote) {
+        return s;
+    }
+    std::string out = "\"";
+    for (char c : s) {
+        if (c == '"') {
+            out += "\"\"";
+        } else {
+            out += c;
+        }
+    }
+    out += "\"";
     return out;
 }
 
@@ -90,6 +115,8 @@ static std::string renderPage(const std::string& success,
         .stat-item { text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 5px; flex: 1; margin: 0 10px; }
         .stat-number { font-size: 24px; font-weight: bold; color: #007bff; }
         .stat-label { color: #666; margin-top: 5px; }
+        .feedback-list { list-style: none; padding: 0; margin: 0; }
+        .feedback-item { padding: 10px; margin-bottom: 8px; background-color: #f8f9fa; border-radius: 4px; white-space: pre-wrap; word-break: break-word; }
     </style>
 </head>
 <body>
@@ -182,6 +209,14 @@ static std::string renderPage(const std::string& success,
         html << R"(<a href="/download"><button class="btn-success">)" << u8"결과 다운로드" << "</button></a></div>";
     }
 
+    if (!feedbacks.empty()) {
+        html << R"(<div class="section"><h3>)" << u8"피드백 목록" << R"(</h3><ul class="feedback-list">)";
+        for (const auto& fb : feedbacks) {
+            html << R"(<li class="feedback-item">)" << escapeHtml(fb.getText()) << "</li>";
+        }
+        html << "</ul></div>";
+    }
+
     if (!error.empty()) {
         html << R"(<p class="alert alert-danger">)" << escapeHtml(error) << "</p>";
     }
@@ -206,6 +241,7 @@ int main() {
 
     // POST /analyze
     svr.Post("/analyze", [](const httplib::Request& req, httplib::Response& res) {
+        Logger::clearPageMessages();
         try {
             auto& feedbacks = Session::getCurrentFeedbacks();
             auto params = parseForm(req.body);
@@ -241,13 +277,14 @@ int main() {
             res.set_content(html, "text/html; charset=UTF-8");
         } catch (const std::exception& e) {
             Logger::logError(std::string(u8"오류 발생: ") + e.what());
-            std::string html = renderPage("", "", u8"처리 중 오류가 발생했습니다.", {}, {}, {});
+            std::string html = renderPage("", "", Logger::getPageError(), {}, {}, {});
             res.set_content(html, "text/html; charset=UTF-8");
         }
     });
 
     // POST /upload
     svr.Post("/upload", [](const httplib::Request& req, httplib::Response& res) {
+        Logger::clearPageMessages();
         try {
             auto& feedbacks = Session::getCurrentFeedbacks();
             if (req.form.has_file("file")) {
@@ -273,13 +310,14 @@ int main() {
             res.set_content(html, "text/html; charset=UTF-8");
         } catch (const std::exception& e) {
             Logger::logError(std::string(u8"파일 업로드 오류: ") + e.what());
-            std::string html = renderPage("", "", u8"파일 업로드 중 오류가 발생했습니다.", {}, {}, {});
+            std::string html = renderPage("", "", Logger::getPageError(), {}, {}, {});
             res.set_content(html, "text/html; charset=UTF-8");
         }
     });
 
     // POST /filter
     svr.Post("/filter", [](const httplib::Request& req, httplib::Response& res) {
+        Logger::clearPageMessages();
         try {
             auto& feedbacks = Session::getCurrentFeedbacks();
             auto params = parseForm(req.body);
@@ -297,17 +335,17 @@ int main() {
                     res.set_content(html, "text/html; charset=UTF-8");
                 } else {
                     Logger::logWarning(u8"필터링 결과가 없습니다.");
-                    std::string html = renderPage("", u8"필터링 결과가 없습니다.", "", {}, {}, {});
+                    std::string html = renderPage("", Logger::getPageWarning(), "", {}, {}, {});
                     res.set_content(html, "text/html; charset=UTF-8");
                 }
             } else {
                 Logger::logWarning(u8"분석할 피드백이 없습니다.");
-                std::string html = renderPage("", u8"분석할 피드백이 없습니다.", "", {}, {}, {});
+                std::string html = renderPage("", Logger::getPageWarning(), "", {}, {}, {});
                 res.set_content(html, "text/html; charset=UTF-8");
             }
         } catch (const std::exception& e) {
             Logger::logError(std::string(u8"오류 발생: ") + e.what());
-            std::string html = renderPage("", "", u8"처리 중 오류가 발생했습니다.", {}, {}, {});
+            std::string html = renderPage("", "", Logger::getPageError(), {}, {}, {});
             res.set_content(html, "text/html; charset=UTF-8");
         }
     });
@@ -319,7 +357,7 @@ int main() {
         csv << "\xEF\xBB\xBF";
         csv << "text\n";
         for (const auto& iter : fil_data) {
-            csv << iter.getText() << "\n";
+            csv << escapeCsvField(iter.getText()) << "\n";
         }
         res.set_header("Content-Disposition", "attachment; filename=\"filtered_feedback.csv\"");
         res.set_content(csv.str(), "text/csv; charset=UTF-8");

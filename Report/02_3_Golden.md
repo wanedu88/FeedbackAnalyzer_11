@@ -65,7 +65,7 @@ flowchart LR
 | RED | `02_1_RED.md` | `tests/*.cpp`, ParseUtils | Extract만 |
 | GREEN | `02_2_GREEN.md` | 검증 기록 | 없음 |
 | **GOLDEN** | **본 문서** | `golden_master.json`, `docs/golden_master.md` | 없음 |
-| M3 GREEN | (예정) | JSON v2 | `classifySentiment`, F05 |
+| M3 BUGFIX | [03_BugFix.md](03_BugFix.md) | JSON v2 | `classifySentiment`, F05 |
 
 ---
 

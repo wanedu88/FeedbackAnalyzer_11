@@ -1,8 +1,14 @@
 {
-  "$schema": "feedback-analyzer/golden-master/v1",
-  "version": "1.0.0",
-  "mission": 2,
+  "$schema": "feedback-analyzer/golden-master/v2",
+  "version": "2.0.0",
+  "mission": 3,
   "generated_at": "2026-05-22",
+  "m3_changes": [
+    "SentimentClassifier::classifySentiment shared by sent() and fil()",
+    "Filters::fil includes CATEGORY_KEYWORDS main sub-map",
+    "Logger pageWarning/pageError surfaced in renderPage",
+    "Multiline feedback list + CSV field escaping in main.cpp"
+  ],
   "encoding": "utf-8",
   "utf8_rule": "Korean stored as UTF-8 in file body; optional \\uXXXX for ASCII-only parsers",
   "source_reports": [
@@ -12,11 +18,11 @@
   ],
   "ctest_summary": {
     "total_registered": 37,
-    "passed": 32,
+    "passed": 37,
     "failed": 0,
-    "disabled_not_run": 5,
+    "disabled_not_run": 0,
     "total_test_time_sec": 1.31,
-    "note": "default ctest excludes DISABLED_* tests"
+    "note": "Mission 3 GREEN: all tests active and passing"
   },
   "coverage_summary": {
     "tool": "gcov + scripts/parse_domain_coverage.py",
@@ -25,8 +31,10 @@
       "Constants.cpp",
       "Filters.cpp",
       "ParseUtils.cpp",
+      "SentimentClassifier.cpp",
       "Filters.h",
-      "TextAnalyzer.h"
+      "TextAnalyzer.h",
+      "TextAnalyzer.cpp"
     ],
     "lines_executed": 134,
     "lines_total": 134,
@@ -34,11 +42,11 @@
     "threshold_percent": 90,
     "files_below_threshold": []
   },
-  "disabled_run_summary": {
-    "command": "feedback_analyzer_tests.exe --gtest_filter=\"*Regression_Neutral*:*F05_KeywordSkipsMain*\" --gtest_also_run_disabled_tests",
-    "passed": 2,
-    "failed": 3,
-    "note": "REG-1, REG-2, REG-0 Fail; REG-3 Pass; F05 Pass (false positive via status sub-keyword)"
+  "m3_regression_summary": {
+    "command": "ctest --output-on-failure",
+    "passed": 37,
+    "failed": 0,
+    "note": "REG-0~3 and F05 promoted from bug_m3_red to baseline"
   },
   "cases": [
     {
@@ -454,12 +462,12 @@
         "reason": "S_KEYWORDS lists 괜찮 under 긍정; fil classifies as positive not neutral"
       },
       "post_m3": {
-        "sent_neutral": 0,
-        "fil_neutral_size": 0,
+        "sent_neutral": 1,
+        "fil_neutral_size": 1,
         "mismatch": false,
         "note": "classifySentiment shared by sent() and fil()"
       },
-      "status": "bug_m3_red"
+      "status": "baseline"
     },
     {
       "id": "REG-2",
@@ -477,11 +485,11 @@
         "gtest_when_enabled": "fail"
       },
       "post_m3": {
-        "sent_neutral": 0,
-        "fil_neutral_size": 0,
+        "sent_neutral": 1,
+        "fil_neutral_size": 1,
         "mismatch": false
       },
-      "status": "bug_m3_red"
+      "status": "baseline"
     },
     {
       "id": "REG-3",
@@ -504,7 +512,7 @@
         "fil_neutral_size": 1,
         "mismatch": false
       },
-      "status": "bug_m3_red"
+      "status": "baseline"
     },
     {
       "id": "REG-0",
@@ -537,7 +545,7 @@
         "fil_neutral_size": 3,
         "mismatch": false
       },
-      "status": "bug_m3_red"
+      "status": "baseline"
     },
     {
       "id": "F-05",
@@ -560,7 +568,7 @@
         "note": "fix main skip; consider sub-only sample or EXPECT_EQ(0) before fix"
       },
       "expected": { "result_size": { "min": 1 } },
-      "status": "bug_m3_red"
+      "status": "baseline"
     }
   ]
 }

@@ -8,6 +8,8 @@
 class Logger {
 private:
     static bool debugMode;
+    static std::string pageWarning;
+    static std::string pageError;
 
     static std::string getTimestamp() {
         auto now = std::time(nullptr);
@@ -18,15 +20,25 @@ private:
     }
 
 public:
+    static void clearPageMessages() {
+        pageWarning.clear();
+        pageError.clear();
+    }
+
+    static const std::string& getPageWarning() { return pageWarning; }
+    static const std::string& getPageError() { return pageError; }
+
     static void logInfo(const std::string& message) {
         std::cout << "[" << getTimestamp() << "] INFO: " << message << std::endl;
     }
 
     static void logWarning(const std::string& message) {
+        pageWarning = message;
         std::cout << "[" << getTimestamp() << "] WARNING: " << message << std::endl;
     }
 
     static void logError(const std::string& message) {
+        pageError = message;
         std::cerr << "[" << getTimestamp() << "] ERROR: " << message << std::endl;
     }
 
