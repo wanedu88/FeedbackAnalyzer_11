@@ -4,11 +4,13 @@
 #include "Logger.h"
 #include "AppConfig.h"
 #include "handlers/Handlers.h"
+#include "services/TrendStore.h"
 
 static FileHandler fileHandler;
 
 int main() {
     Constants::init();
+    TrendStore::loadAtStartup();
 
     httplib::Server svr;
 

@@ -1,0 +1,5 @@
+date,text,sentiment
+2025-05-01,최고입니다,긍정
+2025-05-01,bad line only date,
+2025-05-02,환불,부정
+2025-05-02,plain neutral text,

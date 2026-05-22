@@ -4,6 +4,7 @@
 #include "ParseUtils.h"
 #include "UIComponents.h"
 
+#include <algorithm>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
@@ -46,6 +47,14 @@ void appendPageHead(std::ostringstream& html) {
         .stat-label { color: #666; margin-top: 5px; }
         .feedback-list { list-style: none; padding: 0; margin: 0; }
         .feedback-item { padding: 10px; margin-bottom: 8px; background-color: #f8f9fa; border-radius: 4px; white-space: pre-wrap; word-break: break-word; }
+        .trend-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .trend-table th, .trend-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .trend-table th { background-color: #f8f9fa; }
+        .trend-bar { display: flex; height: 14px; border-radius: 3px; overflow: hidden; background: #e9ecef; min-width: 120px; }
+        .trend-bar-pos { background-color: #28a745; }
+        .trend-bar-neu { background-color: #6c757d; }
+        .trend-bar-neg { background-color: #dc3545; }
+        .trend-legend { font-size: 12px; color: #666; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -148,6 +157,44 @@ void appendStatsBlock(std::ostringstream& html,
     html << "</div>";
 }
 
+void appendTrendSection(std::ostringstream& html, const TrendSnapshot& trend) {
+    if (trend.empty()) {
+        return;
+    }
+    html << R"(<div class="section"><h3>)" << u8"감성 추이 (Trend)" << R"(</h3>
+        <table class="trend-table">
+            <thead><tr>
+                <th>)" << u8"날짜"
+         << R"(</th><th>)" << u8"총 건수" << R"(</th><th>)" << u8"긍정" << R"(</th><th>)"
+         << u8"중립" << R"(</th><th>)" << u8"부정" << R"(</th><th>)" << u8"분포"
+         << R"(</th></tr></thead><tbody>)";
+
+    for (const auto& row : trend.byDay) {
+        const int barTotal = std::max(1, row.total);
+        const int posWidth = (row.positive * 100) / barTotal;
+        const int neuWidth = (row.neutral * 100) / barTotal;
+        const int negWidth = 100 - posWidth - neuWidth;
+
+        html << R"(<tr><td>)" << ParseUtils::escapeHtml(row.date) << R"(</td><td>)" << row.total
+             << R"(</td><td>)" << row.positive << R"(</td><td>)" << row.neutral << R"(</td><td>)"
+             << row.negative << R"(</td><td>
+                <div class="trend-bar" title=")"
+             << u8"긍정 " << row.positive << u8" / " << u8"중립 " << row.neutral << u8" / " << u8"부정 "
+             << row.negative << R"(">
+                    <span class="trend-bar-pos" style="width:)" << posWidth
+             << R"(%;"></span>
+                    <span class="trend-bar-neu" style="width:)" << neuWidth
+             << R"(%;"></span>
+                    <span class="trend-bar-neg" style="width:)" << negWidth << R"(%;"></span>
+                </div>
+            </td></tr>)";
+    }
+
+    html << R"(</tbody></table>
+        <p class="trend-legend">)" << u8"데이터: test_feedback_trend.csv (일별 긍정/중립/부정)"
+         << R"(</p></div>)";
+}
+
 void appendStatsSection(std::ostringstream& html,
                         const std::map<std::string, int>& sentimentResults,
                         const std::map<std::string, int>& keywordResults) {
@@ -179,6 +226,7 @@ std::string HtmlRenderer::renderPage(const std::string& success,
                                      const std::string& error,
                                      const std::map<std::string, int>& sentimentResults,
                                      const std::map<std::string, int>& keywordResults,
+                                     const TrendSnapshot& trend,
                                      const std::vector<Feedback>& feedbacks) {
     std::ostringstream html;
     appendPageHead(html);
@@ -187,6 +235,7 @@ std::string HtmlRenderer::renderPage(const std::string& success,
     appendUploadSection(html);
     appendFilterSection(html);
     appendWarningAlert(html, warning);
+    appendTrendSection(html, trend);
     appendStatsSection(html, sentimentResults, keywordResults);
     appendFeedbackList(html, feedbacks);
     appendErrorAlert(html, error);

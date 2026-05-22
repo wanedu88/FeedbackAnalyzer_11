@@ -7,6 +7,7 @@
 #include "ParseUtils.h"
 #include "Session.h"
 #include "TextAnalyzer.h"
+#include "services/TrendStore.h"
 
 #include <map>
 #include <sstream>
@@ -25,7 +26,8 @@ void respondHtml(httplib::Response& res, const std::string& html) {
 void handleGetRoot(const httplib::Request&, httplib::Response& res) {
     Session::initSessionState();
     auto& feedbacks = Session::getCurrentFeedbacks();
-    respondHtml(res, HtmlRenderer::renderPage(u8"피드백 분석기 시작", "", "", {}, {}, feedbacks));
+    respondHtml(res, HtmlRenderer::renderPage(u8"피드백 분석기 시작", "", "", {}, {},
+                                            TrendStore::getSnapshot(), feedbacks));
 }
 
 void handlePostAnalyze(const httplib::Request& req, httplib::Response& res) {
@@ -61,10 +63,12 @@ void handlePostAnalyze(const httplib::Request& req, httplib::Response& res) {
             Logger::logInfo(u8"키워드 분석 완료");
         }
 
-        respondHtml(res, HtmlRenderer::renderPage(success, "", "", sentimentResults, keywordResults, feedbacks));
+        respondHtml(res, HtmlRenderer::renderPage(success, "", "", sentimentResults, keywordResults,
+                                                TrendStore::getSnapshot(), feedbacks));
     } catch (const std::exception& e) {
         Logger::logError(std::string(u8"오류 발생: ") + e.what());
-        respondHtml(res, HtmlRenderer::renderPage("", "", Logger::getPageError(), {}, {}, {}));
+        respondHtml(res, HtmlRenderer::renderPage("", "", Logger::getPageError(), {}, {},
+                                                TrendStore::getSnapshot(), {}));
     }
 }
 
@@ -98,10 +102,12 @@ void handlePostUpload(const httplib::Request& req, httplib::Response& res) {
             }
         }
         std::string success = std::to_string(feedbacks.size()) + u8"개의 피드백이 입력되었습니다.";
-        respondHtml(res, HtmlRenderer::renderPage(success, "", "", {}, {}, feedbacks));
+        respondHtml(res, HtmlRenderer::renderPage(success, "", "", {}, {}, TrendStore::getSnapshot(),
+                                                feedbacks));
     } catch (const std::exception& e) {
         Logger::logError(std::string(u8"파일 업로드 오류: ") + e.what());
-        respondHtml(res, HtmlRenderer::renderPage("", "", Logger::getPageError(), {}, {}, {}));
+        respondHtml(res, HtmlRenderer::renderPage("", "", Logger::getPageError(), {}, {},
+                                                TrendStore::getSnapshot(), {}));
     }
 }
 
@@ -115,14 +121,16 @@ void handlePostFilter(const httplib::Request& req, httplib::Response& res) {
 
         if (feedbacks.empty()) {
             Logger::logWarning(u8"분석할 피드백이 없습니다.");
-            respondHtml(res, HtmlRenderer::renderPage("", Logger::getPageWarning(), "", {}, {}, {}));
+            respondHtml(res, HtmlRenderer::renderPage("", Logger::getPageWarning(), "", {}, {},
+                                                    TrendStore::getSnapshot(), {}));
             return;
         }
 
         auto filtered = filters.filterFeedbacks(feedbacks, sentiment, keyword);
         if (filtered.empty()) {
             Logger::logWarning(u8"필터링 결과가 없습니다.");
-            respondHtml(res, HtmlRenderer::renderPage("", Logger::getPageWarning(), "", {}, {}, {}));
+            respondHtml(res, HtmlRenderer::renderPage("", Logger::getPageWarning(), "", {}, {},
+                                                    TrendStore::getSnapshot(), {}));
             return;
         }
 
@@ -130,10 +138,12 @@ void handlePostFilter(const httplib::Request& req, httplib::Response& res) {
         auto sentimentResults = textAnalyzer.countSentiments(filtered);
         auto keywordResults = textAnalyzer.countKeywords(filtered);
         Logger::logInfo(u8"필터링 결과: " + std::to_string(filtered.size()) + u8"개의 피드백");
-        respondHtml(res, HtmlRenderer::renderPage("", "", "", sentimentResults, keywordResults, filtered));
+        respondHtml(res, HtmlRenderer::renderPage("", "", "", sentimentResults, keywordResults,
+                                                TrendStore::getSnapshot(), filtered));
     } catch (const std::exception& e) {
         Logger::logError(std::string(u8"오류 발생: ") + e.what());
-        respondHtml(res, HtmlRenderer::renderPage("", "", Logger::getPageError(), {}, {}, {}));
+        respondHtml(res, HtmlRenderer::renderPage("", "", Logger::getPageError(), {}, {},
+                                                TrendStore::getSnapshot(), {}));
     }
 }
 

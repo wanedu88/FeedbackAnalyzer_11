@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Feedback.h"
+#include "services/TrendTypes.h"
 
 #include <map>
 #include <string>
@@ -13,5 +14,6 @@ public:
                                   const std::string& error,
                                   const std::map<std::string, int>& sentimentResults,
                                   const std::map<std::string, int>& keywordResults,
+                                  const TrendSnapshot& trend,
                                   const std::vector<Feedback>& feedbacks);
 };

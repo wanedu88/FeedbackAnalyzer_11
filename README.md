@@ -202,9 +202,28 @@ FeedbackAnalyzer_11/
 - [x] `ctest` **37/37 Pass**, 도메인 coverage **100%**
 - [x] 미션 5 보고서 ([Report/05_Refactoring_긴함수,중복.md](Report/05_Refactoring_긴함수,중복.md))
 
-### 예정 (미션 6~8)
+### 완료 (미션 7)
+- [x] 미션 7-1: 감정·카테고리 키워드 File DB (`data/keywords.json`, `KeywordFileDb`)
+- [x] 미션 7-2: Trend 시각화 (`data/test_feedback_trend.csv`, `TrendLoader`/`TrendAggregator`)
+
+**Trend 수동 검증 체크리스트**
+
+1. `cmake --build build` 후 `build\feedback_analyzer.exe` 실행 → `http://localhost:8080` 접속
+2. 페이지에 **「감성 추이 (Trend)」** 섹션과 일별 표(날짜·총 건수·긍/중/부·막대)가 보이는지 확인
+3. `2025-05-01` 행: 총 2건, 긍정 1·부정 1(또는 중립 1) 등 `data/test_feedback_trend.csv`와 일치하는지 확인
+4. `2025-05-05` 행이 표에 포함되는지 확인 (CSV 9건·5일치)
+5. `data/test_feedback_trend.csv`를 임시로 다른 이름으로 바꾸고 서버 재시작 → Trend 섹션이 사라지는지 확인 후 파일명 복구
+
+**keywords.json 검증 (서버 재시작 필요)**
+
+1. `data/keywords.json`의 `sentiment.긍정` 배열 맨 앞에 `"MISSION7_TEST"` 추가 후 저장
+2. `build\feedback_analyzer.exe` 재실행 → textarea에 `MISSION7_TEST`만 입력 → 분석 → **긍정**으로 집계되는지 확인
+3. 원복 후 재시작하면 기존 키워드로 동작
+
+파일이 없거나 JSON이 깨지면 `Constants.cpp` 하드코딩 fallback이 사용됩니다.
+
+### 예정 (미션 6·8)
 - [ ] 미션 6: 팀 합의 리팩토링 1건을 추가한다 (예: 라우트·HTML 분리)
-- [ ] 미션 7: Trend 시각화와 File DB 연동을 구현한다 (`test_feedback_trend.csv`)
 - [ ] 미션 8: 팀 코드 리뷰·발표 자료를 준비한다
 
 ## 미션 진행 현황
@@ -221,7 +240,7 @@ FeedbackAnalyzer_11/
 ## 알려진 이슈 (미션 4+ 또는 명시 요청 시)
 
 - `/upload` 후 감성 분석 생략, `fil_data` 잔존 가능
-- CSV 다운로드는 M3에서 필드 이스케이프 적용; 대량 데이터·Trend는 미션 7
+- CSV 다운로드는 M3에서 필드 이스케이프 적용; Trend는 `test_feedback_trend.csv` 기준(세션 피드백과 병합하지 않음)
 
 ## CSV 파일 형식
 
